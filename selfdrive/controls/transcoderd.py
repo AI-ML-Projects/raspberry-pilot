@@ -29,16 +29,16 @@ import onnxruntime as ort
 setproctitle('transcoderd')
 
 options = ort.SessionOptions()
-options.intra_op_num_threads = 2
-options.inter_op_num_threads = 2
-options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+#options.intra_op_num_threads = 2
+#options.inter_op_num_threads = 4
+#options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
 options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 provider = 'CPUExecutionProvider'
 ort_session = ort.InferenceSession(os.path.expanduser('models/Model-165.onnx'), options)
 ort_session.set_providers([provider], None)
 
 params = Params()
-profiler = Profiler(False, 'transcoder')
+profiler = Profiler(True, 'transcoder')
 
 BIT_MASK = [1, 128, 64, 32, 8, 4, 2, 8, 
             1, 128, 64, 32, 8, 4, 2, 8, 
@@ -179,7 +179,7 @@ steer_override_timer = 0
 #model_output = None
 start_time = 0
 
-os.system("taskset -a -cp --cpu-list 2,3 %d" % os.getpid())
+#os.system("taskset -a -cp --cpu-list 2,3 %d" % os.getpid())
 
 #['Civic','CRV_5G','Accord_15','Insight', 'Accord']
 #for md in range(len(models)):
@@ -516,6 +516,10 @@ while 1:
     
       profiler.checkpoint('kegman')
         
+    if frame % 30 == 0:
+      gc.collect()
+      profiler.checkpoint('gc.collect')
+
     execution_time_avg += (max(0.0001, time_factor) * ((time.time()*1000 - start_time) - execution_time_avg))
     time_factor *= 0.96
 
