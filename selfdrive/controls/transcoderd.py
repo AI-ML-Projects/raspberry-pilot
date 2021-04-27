@@ -38,7 +38,7 @@ ort_session = ort.InferenceSession(os.path.expanduser('models/Model-165.onnx'), 
 ort_session.set_providers([provider], None)
 
 params = Params()
-profiler = Profiler(True, 'transcoder')
+profiler = Profiler(False, 'transcoder')
 
 BIT_MASK = [1, 128, 64, 32, 8, 4, 2, 8, 
             1, 128, 64, 32, 8, 4, 2, 8, 
@@ -179,7 +179,7 @@ steer_override_timer = 0
 #model_output = None
 start_time = 0
 
-#os.system("taskset -a -cp --cpu-list 2,3 %d" % os.getpid())
+os.system("taskset -a -cp --cpu-list 2,3 %d" % os.getpid())
 
 #['Civic','CRV_5G','Accord_15','Insight', 'Accord']
 #for md in range(len(models)):
@@ -483,9 +483,9 @@ while 1:
       next_params_distance = distance_driven + 133000
       print(np.round(calibration[0],2))
       if calibrated:
-        put_nonblocking("CalibrationParams", json.dumps({'calibration': list([float(x) for x in calibration[0]]),'lane_width': float(lane_width),'angle_bias': float(angle_bias), 'center_bias': list([float(x) for x in center_bias]), 'model_bias': list([float(x) for x in model_bias])}))
+        put_nonblocking("CalibrationParams", json.dumps({'calibration': list(np.concatenate(([float(x) for x in calibration[0]], [float(x) for x in calibration[1]]),axis=0)),'lane_width': float(lane_width),'angle_bias': float(angle_bias), 'center_bias': list([float(x) for x in center_bias]), 'model_bias': list([float(x) for x in model_bias])}))
       else:
-        params.put("CalibrationParams", json.dumps({'calibration': list([float(x) for x in calibration[0]]),'lane_width': float(lane_width),'angle_bias': float(angle_bias), 'center_bias': list([float(x) for x in center_bias]), 'model_bias': list([float(x) for x in model_bias])}))
+        params.put("CalibrationParams", json.dumps({'calibration': list(np.concatenate(([float(x) for x in calibration[0]], [float(x) for x in calibration[1]]),axis=0)),'lane_width': float(lane_width),'angle_bias': float(angle_bias), 'center_bias': list([float(x) for x in center_bias]), 'model_bias': list([float(x) for x in model_bias])}))
       #params = None
       calibrated = True
       profiler.checkpoint('save_cal')
